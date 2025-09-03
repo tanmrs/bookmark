@@ -1,0 +1,11 @@
+{
+  "name": "LimeBox",
+  "short_name": "LimeBox",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#0ea5e9",
+  "icons": [
+    { "src": "icons/lime.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

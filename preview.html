@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN" data-page="preview">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LimeBox 预览</title>
+  <link rel="icon" href="icons/lime.svg">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <script>window.LimeDemo = true;</script>
+  
+  <noscript><div class="noscript">本页面需要启用 JavaScript。</div></noscript>
+  <div id="debug" class="debug"></div>
+
+  <div class="shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <img src="icons/lime.svg" alt="LimeBox" class="logo">
+        <strong>LimeBox</strong>
+      </div>
+      <nav id="collections" class="collections"></nav>
+      <div class="sidebar-footer">
+        <button id="btn-new-collection" class="btn ghost w-full">+ 新集合</button>
+      </div>
+      <div class="sidebar-hint">右键集合可重命名/删除</div>
+    </aside>
+
+    <main class="main">
+      <header class="toolbar glass">
+        <div class="search-wrap">
+          <input id="search" type="search" placeholder="搜索 书签 / 标签 / URL（按 / 唤起）" autocomplete="off" />
+          <div id="quick-tags" class="quick-tags" aria-live="polite"></div>
+        </div>
+        <div class="toolbar-actions">
+          <label class="sort">
+            排序
+            <select id="sort-select">
+              <option value="order">手动</option>
+              <option value="created">创建</option>
+              <option value="title">标题</option>
+            </select>
+          </label>
+          <button id="btn-view-grid" class="icon-btn" title="宫格视图" aria-pressed="true">▦</button>
+          <button id="btn-view-list" class="icon-btn" title="列表视图" aria-pressed="false">≡</button>
+          <div class="split"></div>
+          <button id="btn-new-bookmark" class="btn primary">+ 新书签</button>
+          <button id="btn-save-open-tabs" class="btn ghost" title="仅扩展模式可用">收集当前窗口</button>
+          <div class="split"></div>
+          <button id="btn-import-json" class="btn ghost">导入</button>
+          <button id="btn-export-json" class="btn ghost">导出</button>
+          <button id="btn-import-chrome" class="btn ghost" title="仅扩展模式可用">导入浏览器书签</button>
+          <button id="btn-bookmarklet" class="btn ghost" title="安装收藏书签工具">🔖 Bookmarklet</button>
+          <button id="btn-theme" class="btn ghost" title="切换主题">🌓</button>
+          <button id="btn-style" class="btn ghost" title="切换风格（配色/圆角）">🎨 风格</button>
+          <button id="btn-motion" class="btn ghost" title="切换动效">🎞 动效</button>
+          <button id="btn-help" class="btn ghost" title="帮助/快捷键">？</button>
+        </div>
+      </header>
+
+      <section class="board-head">
+        <h1 id="board-title" class="board-title">收集箱</h1>
+        <p id="board-sub" class="board-sub">用集合组织你的书签。支持标签、搜索与拖拽排序。</p>
+      </section>
+
+      <section id="grid" class="grid" aria-live="polite"></section>
+    </main>
+  </div>
+
+  <!-- 书签编辑弹窗 -->
+  <dialog id="dlg-bookmark" class="dialog">
+    <form method="dialog" id="form-bookmark">
+      <h3 id="dlg-bm-title">新建书签</h3>
+      <div class="two-col">
+        <label>标题 <input required name="title" placeholder="例如：LimeBox 项目" /></label>
+        <label>链接 <input required name="url" type="url" placeholder="https://example.com" /></label>
+      </div>
+      <div class="two-col">
+        <label>标签（逗号分隔） <input name="tags" placeholder="productivity, reading" /></label>
+        <label>集合
+          <select name="collectionId" id="bm-collection"></select>
+        </label>
+      </div>
+      <label>备注 <textarea name="note" rows="3" placeholder="可选"></textarea></label>
+      <menu>
+        <button value="cancel" class="btn ghost">取消</button>
+        <button value="ok" class="btn primary">保存</button>
+      </menu>
+      <input type="hidden" name="id" />
+    </form>
+  </dialog>
+
+  <!-- 集合编辑弹窗（支持删除） -->
+  <dialog id="dlg-collection" class="dialog">
+    <form method="dialog" id="form-collection">
+      <h3 id="dlg-col-title">新建集合</h3>
+      <div class="two-col">
+        <label>名称 <input required name="name" placeholder="例如：阅读清单" /></label>
+        <label>颜色 <input name="color" type="color" value="#10b981" /></label>
+      </div>
+      <div id="col-danger" class="danger-zone" hidden>
+        <strong>危险操作</strong>
+        <label><input type="checkbox" id="col-move-to-inbox" checked> 删除时将书签移动到“收集箱”</label>
+        <p class="muted">若不勾选，删除集合将同时删除其中的书签。</p>
+        <button type="button" id="btn-col-delete" class="btn danger">删除该集合</button>
+      </div>
+      <menu>
+        <button value="cancel" class="btn ghost">取消</button>
+        <button value="ok" class="btn primary">保存</button>
+      </menu>
+      <input type="hidden" name="id" />
+    </form>
+  </dialog>
+
+  <!-- 帮助 -->
+  <dialog id="dlg-help" class="dialog">
+    <form method="dialog">
+      <h3>帮助 & 快捷键</h3>
+      <ul class="help-list">
+        <li>按 <kbd>/</kbd> 聚焦搜索</li>
+        <li>按 <kbd>N</kbd> 新建书签</li>
+        <li>按 <kbd>C</kbd> 新建集合</li>
+        <li>点击卡片上的 <em>🔗</em> 打开、<em>✏️</em> 编辑、<em>🗑️</em> 删除</li>
+        <li>书签卡片支持拖拽排序（选择“手动”排序）</li>
+        <li>右键集合标签可重命名或删除</li>
+        <li>“🔖 Bookmarklet” 可一键把当前网页发送到 LimeBox</li>
+      </ul>
+      <menu>
+        <button value="ok" class="btn primary">知道了</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <footer class="foot">
+    <small>本地优先存储 · PWA 离线可用 · 扩展模式自动增强 · 热键：/ 搜索，N 新书签，C 新集合 · 🎨 四款风格 / 🎞 四种动效可切换</small>
+  </footer>
+
+  <script>
+    // 预览模式：index.html?demo=1 或 preview.html 会注入示例数据
+    window.LimeDemo = window.LimeDemo || (new URL(location.href).searchParams.get('demo') === '1');
+
+    // 简易错误提示
+    window.addEventListener('error', (e) => {
+      const box = document.getElementById('debug');
+      if (!box) return;
+      box.style.display = 'block';
+      box.textContent = 'Runtime error: ' + (e.message || e.error);
+    });
+  </script>
+  <script defer src="storage.js"></script>
+  <script defer src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator && !location.href.startsWith('chrome-extension://')) {
+      navigator.serviceWorker.register('./service-worker.js').catch(console.warn);
+    }
+
+    // <dialog> 兼容处理（简易 polyfill）
+    (function(){
+      const supported = !!window.HTMLDialogElement && !!HTMLDialogElement.prototype.showModal;
+      if (supported) return;
+      document.querySelectorAll('dialog').forEach(dlg => {
+        if (!dlg.showModal) {
+          dlg.showModal = function(){ this.setAttribute('open',''); };
+        }
+        if (!dlg.close) {
+          dlg.close = function(){ this.removeAttribute('open'); };
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

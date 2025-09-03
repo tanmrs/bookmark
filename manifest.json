@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "LimeBox — 书签集合",
+  "description": "轻量、现代的书签/集合管理器。灵感来自 Toby & Pinbox。",
+  "version": "0.3.2",
+  "icons": {
+    "16": "icons/lime.svg",
+    "32": "icons/lime.svg",
+    "128": "icons/lime.svg"
+  },
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "action": { "default_title": "LimeBox" },
+  "permissions": ["storage", "bookmarks", "tabs"]
+}
